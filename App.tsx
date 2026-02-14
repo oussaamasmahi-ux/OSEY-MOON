@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { UserState, ContentItem, AccessToken, AppConfig } from './types.ts';
-import { storage } from './services/storage.ts';
-import { INITIAL_CONFIG, INITIAL_CONTENT, ADMIN_SECRET } from './constants.ts';
-import { Login } from './views/Login.tsx';
-import { AdminDashboard } from './views/AdminDashboard.tsx';
-import { StudentDashboard } from './views/StudentDashboard.tsx';
-import { Layout } from './components/Layout.tsx';
-import { VetChat } from './components/VetChat.tsx';
+import { UserState, ContentItem, AccessToken, AppConfig } from './types';
+import { storage } from './services/storage';
+import { INITIAL_CONFIG, INITIAL_CONTENT, ADMIN_SECRET } from './constants';
+import { Login } from './views/Login';
+import { AdminDashboard } from './views/AdminDashboard';
+import { StudentDashboard } from './views/StudentDashboard';
+import { Layout } from './components/Layout';
+import { VetChat } from './components/VetChat';
 import { Settings, Eye } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -54,7 +54,6 @@ const App: React.FC = () => {
       const foundToken = tokens[tokenIndex];
       const studentUser: UserState = { 
         role: 'student', 
-        role_type: 'student', // Fallback for some components
         token: foundToken.code, 
         expiry: foundToken.expiryDate 
       } as any;

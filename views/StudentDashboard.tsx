@@ -4,7 +4,7 @@ import { ContentItem, UserState, Attachment } from '../types';
 import { GlassCard } from '../components/GlassCard';
 import { Search, Image as ImageIcon, FileText, ExternalLink, X, Clock, Eye, Download, ChevronLeft, BookOpen } from 'lucide-react';
 
-// Using default React import to ensure JSX intrinsic elements (div, h2, p, input, button, h3, span, img, a, etc.) are correctly recognized in this environment
+// Changed to default import to ensure JSX intrinsic elements (div, h2, p, input, button, h3, span, img, a, etc.) are correctly recognized in this environment
 interface StudentDashboardProps {
   content: ContentItem[];
   user: UserState;

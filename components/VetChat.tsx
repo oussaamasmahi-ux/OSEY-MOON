@@ -3,9 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { MessageCircle, Send, X, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { VET_AI_INSTRUCTION } from '../constants';
-import { GlassCard } from './GlassCard';
 
-// Using default React import to ensure JSX intrinsic elements (div, button, form, input, p, h3, span, etc.) are correctly recognized in this environment
 export const VetChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string }[]>([]);
@@ -23,29 +21,46 @@ export const VetChat: React.FC = () => {
     if (!input.trim() || isLoading) return;
 
     const userMsg = input.trim();
+    const currentHistory = [...messages];
+    
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsLoading(true);
 
     try {
-      // Creating a new GoogleGenAI instance right before making the API call as per guidelines
+      // Create new instance to ensure up-to-date API key is used
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      // Upgraded to gemini-3-pro-preview for complex veterinary medical reasoning
+      
+      // Build history for multi-turn conversation
+      const contents = [
+        ...currentHistory.map(m => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.text }]
+        })),
+        { role: 'user', parts: [{ text: userMsg }] }
+      ];
+
       const response = await ai.models.generateContent({
+        // Upgraded to gemini-3-pro-preview for complex veterinary medical tasks
         model: 'gemini-3-pro-preview',
-        contents: [...messages.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.text }] })), { role: 'user', parts: [{ text: userMsg }] }],
+        contents: contents,
         config: {
           systemInstruction: VET_AI_INSTRUCTION,
           temperature: 0.7,
         },
       });
 
-      // Directly accessing .text property as per guidelines
-      const aiText = response.text || "عذراً، واجهت مشكلة في معالجة طلبك.";
+      const aiText = response.text || "عذراً، لم أتمكن من الحصول على رد مفيد.";
       setMessages(prev => [...prev, { role: 'ai', text: aiText }]);
     } catch (error) {
-      console.error("VetChat API error:", error);
-      setMessages(prev => [...prev, { role: 'ai', text: "حدث خطأ في الاتصال، يرجى المحاولة لاحقاً." }]);
+      console.error("AI Error:", error);
+      let errorMsg = "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي. يرجى المحاولة لاحقاً.";
+      
+      if (error instanceof Error && error.message.includes("403")) {
+        errorMsg = "خطأ في صلاحيات مفتاح API (Forbidden).";
+      }
+      
+      setMessages(prev => [...prev, { role: 'ai', text: errorMsg }]);
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +77,7 @@ export const VetChat: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-bold text-white leading-none">Osey AI</h3>
-                <span className="text-[10px] text-emerald-100 opacity-80 uppercase tracking-widest">Vet Assistant</span>
+                <span className="text-[10px] text-emerald-100 opacity-80 uppercase tracking-widest">مساعد بيطري ذكي</span>
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/10 rounded-full text-white">
@@ -76,7 +91,7 @@ export const VetChat: React.FC = () => {
                 <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Sparkles className="w-8 h-8 text-emerald-400" />
                 </div>
-                <p className="text-emerald-200/60 text-sm px-6">أنا مساعدك الذكي في osey vet. اسألني عن أي موضوع بيطري وسأجيبك فوراً!</p>
+                <p className="text-emerald-200/60 text-sm px-6 font-bold">مرحباً بك! أنا مساعدك الذكي المتخصص في الطب البيطري. كيف يمكنني مساعدتك اليوم؟</p>
               </div>
             )}
             {messages.map((msg, i) => (
@@ -85,7 +100,7 @@ export const VetChat: React.FC = () => {
                   <div className="shrink-0 pt-1">
                     {msg.role === 'user' ? <User className="w-4 h-4 opacity-50" /> : <Bot className="w-4 h-4" />}
                   </div>
-                  <p className="text-sm leading-relaxed">{msg.text}</p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                 </div>
               </div>
             ))}

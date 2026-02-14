@@ -1,9 +1,10 @@
 
-import React, { useState, FormEvent } from 'react';
+import React, { useState } from 'react';
+import type { FormEvent } from 'react';
 import { GlassCard } from '../components/GlassCard';
 import { KeyRound, Lock, AlertCircle } from 'lucide-react';
 
-// Using default React import to ensure JSX intrinsic elements (form, input, h2, etc.) are correctly recognized in this environment
+// Changed to default import to ensure JSX intrinsic elements (form, input, h2, etc.) are correctly recognized in this environment
 interface LoginProps {
   onLogin: (code: string) => boolean;
 }
