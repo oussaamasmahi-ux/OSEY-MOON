@@ -1,11 +1,11 @@
 
-import React from 'react';
+import * as React from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { MessageCircle, Send, X, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { VET_AI_INSTRUCTION } from '../constants';
 import { GlassCard } from './GlassCard';
 
-// Updated to React default import to fix JSX intrinsic element errors
+// Using * as React to ensure JSX intrinsic elements (div, button, form, input, p, h3, span, etc.) are correctly recognized in this environment
 export const VetChat: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [messages, setMessages] = React.useState<{ role: 'user' | 'ai', text: string }[]>([]);
@@ -30,8 +30,9 @@ export const VetChat: React.FC = () => {
     try {
       // Creating a new GoogleGenAI instance right before making the API call as per guidelines
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // Upgraded to gemini-3-pro-preview for complex veterinary medical reasoning
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3-pro-preview',
         contents: [...messages.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.text }] })), { role: 'user', parts: [{ text: userMsg }] }],
         config: {
           systemInstruction: VET_AI_INSTRUCTION,
@@ -43,6 +44,7 @@ export const VetChat: React.FC = () => {
       const aiText = response.text || "عذراً، واجهت مشكلة في معالجة طلبك.";
       setMessages(prev => [...prev, { role: 'ai', text: aiText }]);
     } catch (error) {
+      console.error("VetChat API error:", error);
       setMessages(prev => [...prev, { role: 'ai', text: "حدث خطأ في الاتصال، يرجى المحاولة لاحقاً." }]);
     } finally {
       setIsLoading(false);

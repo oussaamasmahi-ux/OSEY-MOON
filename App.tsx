@@ -1,31 +1,32 @@
 
-import React from 'react';
-import { UserState, ContentItem, AccessToken, AppConfig } from './types';
-import { storage } from './services/storage';
-import { INITIAL_CONFIG, INITIAL_CONTENT, ADMIN_SECRET } from './constants';
-import { Login } from './views/Login';
-import { AdminDashboard } from './views/AdminDashboard';
-import { StudentDashboard } from './views/StudentDashboard';
-import { Layout } from './components/Layout';
-import { VetChat } from './components/VetChat';
+import * as React from 'react';
+import { useState, useEffect } from 'react';
+import { UserState, ContentItem, AccessToken, AppConfig } from './types.ts';
+import { storage } from './services/storage.ts';
+import { INITIAL_CONFIG, INITIAL_CONTENT, ADMIN_SECRET } from './constants.ts';
+import { Login } from './views/Login.tsx';
+import { AdminDashboard } from './views/AdminDashboard.tsx';
+import { StudentDashboard } from './views/StudentDashboard.tsx';
+import { Layout } from './components/Layout.tsx';
+import { VetChat } from './components/VetChat.tsx';
 import { Settings, Eye } from 'lucide-react';
 
-// Standardized React import to resolve JSX intrinsic element errors
 const App: React.FC = () => {
-  const [user, setUser] = React.useState<UserState | null>(storage.getUser());
-  const [content, setContent] = React.useState<ContentItem[]>(storage.getContent());
-  const [tokens, setTokens] = React.useState<AccessToken[]>(storage.getTokens());
-  const [config, setConfig] = React.useState<AppConfig>(storage.getConfig() || INITIAL_CONFIG);
-  const [isAdminMode, setIsAdminMode] = React.useState(false);
-  const [theme, setTheme] = React.useState<'light' | 'dark'>(localStorage.getItem('theme') as any || 'dark');
+  const [user, setUser] = useState<UserState | null>(() => storage.getUser());
+  const [content, setContent] = useState<ContentItem[]>(() => storage.getContent());
+  const [tokens, setTokens] = useState<AccessToken[]>(() => storage.getTokens());
+  const [config, setConfig] = useState<AppConfig>(() => storage.getConfig() || INITIAL_CONFIG);
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem('theme') as any) || 'dark');
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (content.length === 0 && storage.getContent().length === 0) {
       storage.saveContent(INITIAL_CONTENT);
       setContent(INITIAL_CONTENT);
     }
-    
-    // تطبيق السمة على الـ body
+  }, [content]);
+
+  useEffect(() => {
     document.body.className = theme;
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
@@ -34,10 +35,6 @@ const App: React.FC = () => {
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
 
   const handleLogin = (code: string) => {
     if (code === ADMIN_SECRET) {
@@ -97,7 +94,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <Layout config={config} user={user} onLogout={handleLogout} theme={theme} onToggleTheme={toggleTheme}>
+    <Layout config={config} user={user} onLogout={handleLogout} theme={theme} onToggleTheme={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}>
       {!user ? (
         <Login onLogin={handleLogin} />
       ) : (

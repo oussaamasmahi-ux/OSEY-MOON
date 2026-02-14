@@ -1,9 +1,9 @@
 
-import React from 'react';
+import * as React from 'react';
 import { AppConfig, UserState } from '../types';
 import { LogOut, ShieldCheck, User, Stethoscope, Star, Facebook, Youtube, MessageCircle, Send as TelegramIcon, Sun, Moon } from 'lucide-react';
 
-// Using standard React default import to fix JSX intrinsic elements type issues
+// Using * as React to ensure JSX intrinsic elements (header, div, main, footer, etc.) are correctly recognized in this environment
 interface LayoutProps {
   children: React.ReactNode;
   config: AppConfig;

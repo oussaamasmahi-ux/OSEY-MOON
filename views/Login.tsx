@@ -1,9 +1,9 @@
 
-import React from 'react';
+import * as React from 'react';
 import { GlassCard } from '../components/GlassCard';
 import { KeyRound, Lock, AlertCircle } from 'lucide-react';
 
-// Using standard default import to ensure JSX intrinsic elements are defined
+// Using * as React to ensure JSX intrinsic elements (form, input, h2, etc.) are correctly recognized in this environment
 interface LoginProps {
   onLogin: (code: string) => boolean;
 }

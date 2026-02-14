@@ -1,11 +1,11 @@
 
-import React from 'react';
+import * as React from 'react';
 import { ContentItem, AccessToken, AppConfig, ContentType, TokenDuration, Attachment } from '../types';
 import { GlassCard } from '../components/GlassCard';
 import { Plus, Trash2, Key, BookOpen, Settings, Layout, Image as ImageIcon, FileText, Hash, Check, Facebook, Youtube, MessageCircle, Send as TelegramIcon, UserCheck, Timer, Upload, Loader2, X, Files, ChevronDown } from 'lucide-react';
 import { DURATION_LABELS, DURATION_MS } from '../constants';
 
-// Fixed JSX intrinsic element errors by using React default import
+// Using * as React to ensure JSX intrinsic elements (div, nav, button, select, input, etc.) are correctly recognized in this environment
 interface AdminDashboardProps {
   content: ContentItem[];
   setContent: (content: ContentItem[]) => void;
@@ -170,13 +170,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   type="text" 
                   placeholder="عنوان الدرس أو الاختبار"
                   className="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all text-white placeholder:text-white/20"
-                  value={newContent.title}
+                  value={newContent.title || ''}
                   onChange={e => setNewContent({...newContent, title: e.target.value})}
                 />
                 <textarea 
                   placeholder="وصف المحتوى..."
                   className="w-full bg-white/5 border border-white/10 rounded-xl p-4 h-24 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all resize-none text-white placeholder:text-white/20"
-                  value={newContent.description}
+                  value={newContent.description || ''}
                   onChange={e => setNewContent({...newContent, description: e.target.value})}
                 />
                 
