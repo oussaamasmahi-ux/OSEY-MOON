@@ -1,0 +1,22 @@
+
+{
+  "name": "osey vet - المنصة البيطرية",
+  "short_name": "osey vet",
+  "description": "المنصة التعليمية الأولى لطلاب الطب البيطري",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#064e3b",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2809/2809831.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2809/2809831.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

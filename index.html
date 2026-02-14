@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>osey vet | المنصة البيطرية</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#064e3b">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              emerald: {
+                950: '#022c22',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Cairo', sans-serif;
+        transition: background-color 0.5s ease;
+        min-height: 100vh;
+      }
+      
+      /* الوضع الداكن */
+      body.dark {
+        background-color: #064e3b;
+        background-image: 
+          linear-gradient(to bottom, rgba(6, 78, 59, 0.9), rgba(2, 44, 34, 0.98)),
+          url('https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&q=80&w=2070');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+      }
+
+      /* الوضع الفاتح */
+      body.light {
+        background-color: #f0fdf4;
+        background-image: 
+          linear-gradient(to bottom, rgba(240, 253, 244, 0.9), rgba(220, 252, 231, 0.95)),
+          url('https://images.unsplash.com/photo-1516733725897-1aa73b87c8e8?auto=format&fit=crop&q=80&w=2070');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+      }
+
+      .glass {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      
+      .dark .glass {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .light .glass {
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(16, 185, 129, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+      }
+
+      .glass-green {
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+      }
+
+      .dark .glass-green {
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+      }
+
+      .light .glass-green {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        box-shadow: 0 4px 20px rgba(6, 78, 59, 0.05);
+      }
+
+      h1, h2, h3, h4 {
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      }
+      
+      .dark h1, .dark h2, .dark h3 {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      }
+
+      /* تحسين السكرول بار */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.1);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #10b981;
+        border-radius: 10px;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.564.0",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+  }
+}
+</script>
+</head>
+  <body class="dark">
+    <div id="root"></div>
+  </body>
+</html>
