@@ -1,20 +1,20 @@
 
-import * as React from 'react';
+import React, { useState } from 'react';
 import { ContentItem, UserState, Attachment } from '../types';
 import { GlassCard } from '../components/GlassCard';
 import { Search, Image as ImageIcon, FileText, ExternalLink, X, Clock, Eye, Download, ChevronLeft, BookOpen } from 'lucide-react';
 
-// Using * as React to ensure JSX intrinsic elements (div, h2, p, input, button, h3, span, img, a, etc.) are correctly recognized in this environment
+// Using default React import to ensure JSX intrinsic elements (div, h2, p, input, button, h3, span, img, a, etc.) are correctly recognized in this environment
 interface StudentDashboardProps {
   content: ContentItem[];
   user: UserState;
 }
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({ content, user }) => {
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [selectedItem, setSelectedItem] = React.useState<ContentItem | null>(null);
-  const [filter, setFilter] = React.useState<'all' | 'lesson' | 'summary' | 'exam'>('all');
-  const [previewImage, setPreviewImage] = React.useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
+  const [filter, setFilter] = useState<'all' | 'lesson' | 'summary' | 'exam'>('all');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const filteredContent = content.filter(item => {
     const searchLower = searchTerm.toLowerCase();

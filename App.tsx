@@ -1,6 +1,5 @@
 
-import * as React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserState, ContentItem, AccessToken, AppConfig } from './types.ts';
 import { storage } from './services/storage.ts';
 import { INITIAL_CONFIG, INITIAL_CONTENT, ADMIN_SECRET } from './constants.ts';
@@ -55,9 +54,10 @@ const App: React.FC = () => {
       const foundToken = tokens[tokenIndex];
       const studentUser: UserState = { 
         role: 'student', 
+        role_type: 'student', // Fallback for some components
         token: foundToken.code, 
         expiry: foundToken.expiryDate 
-      };
+      } as any;
       
       const newTokens = [...tokens];
       newTokens[tokenIndex] = { ...foundToken, isUsed: true };

@@ -1,11 +1,11 @@
 
-import * as React from 'react';
+import React, { useState, useRef, ChangeEvent } from 'react';
 import { ContentItem, AccessToken, AppConfig, ContentType, TokenDuration, Attachment } from '../types';
 import { GlassCard } from '../components/GlassCard';
 import { Plus, Trash2, Key, BookOpen, Settings, Layout, Image as ImageIcon, FileText, Hash, Check, Facebook, Youtube, MessageCircle, Send as TelegramIcon, UserCheck, Timer, Upload, Loader2, X, Files, ChevronDown } from 'lucide-react';
 import { DURATION_LABELS, DURATION_MS } from '../constants';
 
-// Using * as React to ensure JSX intrinsic elements (div, nav, button, select, input, etc.) are correctly recognized in this environment
+// Using default React import to ensure JSX intrinsic elements (div, nav, button, select, input, etc.) are correctly recognized in this environment
 interface AdminDashboardProps {
   content: ContentItem[];
   setContent: (content: ContentItem[]) => void;
@@ -18,14 +18,14 @@ interface AdminDashboardProps {
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   content, setContent, tokens, setTokens, config, setConfig
 }) => {
-  const [activeTab, setActiveTab] = React.useState<'content' | 'tokens' | 'settings'>('content');
-  const [saveSuccess, setSaveSuccess] = React.useState(false);
-  const [isUploading, setIsUploading] = React.useState(false);
+  const [activeTab, setActiveTab] = useState<'content' | 'tokens' | 'settings'>('content');
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [uploadType, setUploadType] = React.useState<'image' | 'pdf'>('image');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadType, setUploadType] = useState<'image' | 'pdf'>('image');
 
-  const [newContent, setNewContent] = React.useState<Partial<ContentItem>>({
+  const [newContent, setNewContent] = useState<Partial<ContentItem>>({
     title: '', description: '', category: 'lesson', attachments: []
   });
 
@@ -51,7 +51,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 

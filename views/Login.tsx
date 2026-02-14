@@ -1,18 +1,18 @@
 
-import * as React from 'react';
+import React, { useState, FormEvent } from 'react';
 import { GlassCard } from '../components/GlassCard';
 import { KeyRound, Lock, AlertCircle } from 'lucide-react';
 
-// Using * as React to ensure JSX intrinsic elements (form, input, h2, etc.) are correctly recognized in this environment
+// Using default React import to ensure JSX intrinsic elements (form, input, h2, etc.) are correctly recognized in this environment
 interface LoginProps {
   onLogin: (code: string) => boolean;
 }
 
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [code, setCode] = React.useState('');
-  const [error, setError] = React.useState(false);
+  const [code, setCode] = useState('');
+  const [error, setError] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (onLogin(code)) {
       setError(false);

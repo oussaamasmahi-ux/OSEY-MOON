@@ -1,7 +1,7 @@
 
-import * as React from 'react';
+import React from 'react';
 
-// Using * as React to ensure JSX intrinsic elements (div, etc.) are correctly recognized in this environment
+// Using default React import to ensure JSX intrinsic elements (div, etc.) are correctly recognized in this environment
 interface GlassCardProps {
   children: React.ReactNode;
   className?: string;

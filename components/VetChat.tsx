@@ -1,19 +1,19 @@
 
-import * as React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { MessageCircle, Send, X, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { VET_AI_INSTRUCTION } from '../constants';
 import { GlassCard } from './GlassCard';
 
-// Using * as React to ensure JSX intrinsic elements (div, button, form, input, p, h3, span, etc.) are correctly recognized in this environment
+// Using default React import to ensure JSX intrinsic elements (div, button, form, input, p, h3, span, etc.) are correctly recognized in this environment
 export const VetChat: React.FC = () => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [messages, setMessages] = React.useState<{ role: 'user' | 'ai', text: string }[]>([]);
-  const [input, setInput] = React.useState('');
-  const [isLoading, setIsLoading] = React.useState(false);
-  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string }[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
