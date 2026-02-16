@@ -1,9 +1,9 @@
 
+// Fix: Use default import for React to resolve JSX intrinsic element type errors
 import React from 'react';
 import { AppConfig, UserState } from '../types';
 import { LogOut, ShieldCheck, User, Stethoscope, Star, Facebook, Youtube, MessageCircle, Send as TelegramIcon, Sun, Moon } from 'lucide-react';
 
-// Changed to default import to ensure JSX intrinsic elements (header, div, main, footer, etc.) are correctly recognized in this environment
 interface LayoutProps {
   children: React.ReactNode;
   config: AppConfig;

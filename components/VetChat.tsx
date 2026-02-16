@@ -1,4 +1,5 @@
 
+// Fix: Use default import for React to resolve JSX intrinsic element type errors
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { MessageCircle, Send, X, Bot, User, Loader2, Sparkles } from 'lucide-react';
@@ -28,10 +29,10 @@ export const VetChat: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Create new instance to ensure up-to-date API key is used
+      // إنشاء مثيل جديد لضمان استخدام أحدث مفتاح API
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       
-      // Build history for multi-turn conversation
+      // تشكيل مصفوفة المحتوى مع الحفاظ على الأدوار (user/model)
       const contents = [
         ...currentHistory.map(m => ({
           role: m.role === 'user' ? 'user' : 'model',
@@ -41,23 +42,24 @@ export const VetChat: React.FC = () => {
       ];
 
       const response = await ai.models.generateContent({
-        // Upgraded to gemini-3-pro-preview for complex veterinary medical tasks
         model: 'gemini-3-pro-preview',
-        contents: contents,
+        contents: contents, // استخدام المصفوفة مباشرة للحفاظ على سياق الحوار
         config: {
           systemInstruction: VET_AI_INSTRUCTION,
-          temperature: 0.7,
+          temperature: 0.8,
+          // إضافة ميزانية تفكير للموديل Pro لضمان دقة الإجابات البيطرية العلمية
+          thinkingConfig: { thinkingBudget: 4000 }
         },
       });
 
-      const aiText = response.text || "عذراً، لم أتمكن من الحصول على رد مفيد.";
+      const aiText = response.text || "عذراً، واجهت مشكلة في صياغة الإجابة.";
       setMessages(prev => [...prev, { role: 'ai', text: aiText }]);
     } catch (error) {
-      console.error("AI Error:", error);
-      let errorMsg = "حدث خطأ أثناء الاتصال بالذكاء الاصطناعي. يرجى المحاولة لاحقاً.";
+      console.error("AI Assistant Error:", error);
+      let errorMsg = "فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت أو صلاحية مفتاح API.";
       
       if (error instanceof Error && error.message.includes("403")) {
-        errorMsg = "خطأ في صلاحيات مفتاح API (Forbidden).";
+        errorMsg = "عذراً، انتهت حصة الاستخدام المجانية أو المفتاح غير صالح.";
       }
       
       setMessages(prev => [...prev, { role: 'ai', text: errorMsg }]);
@@ -80,7 +82,7 @@ export const VetChat: React.FC = () => {
                 <span className="text-[10px] text-emerald-100 opacity-80 uppercase tracking-widest">مساعد بيطري ذكي</span>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/10 rounded-full text-white">
+            <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/10 rounded-full text-white transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -120,12 +122,12 @@ export const VetChat: React.FC = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="اسأل سؤالاً بيطرياً..."
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 outline-none"
               />
               <button 
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className="bg-emerald-500 p-2.5 rounded-xl text-white hover:bg-emerald-600 transition-all disabled:opacity-50"
+                className="bg-emerald-500 p-2.5 rounded-xl text-white hover:bg-emerald-600 transition-all disabled:opacity-50 shadow-lg active:scale-95"
               >
                 <Send className="w-5 h-5" />
               </button>

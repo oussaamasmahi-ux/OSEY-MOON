@@ -1,4 +1,5 @@
 
+// Fix: Use default import for React to resolve JSX intrinsic element type errors
 import React, { useState, useEffect } from 'react';
 import { UserState, ContentItem, AccessToken, AppConfig } from './types';
 import { storage } from './services/storage';
@@ -8,7 +9,7 @@ import { AdminDashboard } from './views/AdminDashboard';
 import { StudentDashboard } from './views/StudentDashboard';
 import { Layout } from './components/Layout';
 import { VetChat } from './components/VetChat';
-import { Settings, Eye } from 'lucide-react';
+import { Settings, Eye, AlertTriangle, Clock } from 'lucide-react';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<UserState | null>(() => storage.getUser());
@@ -35,8 +36,14 @@ const App: React.FC = () => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const handleLogin = (code: string) => {
-    if (code === ADMIN_SECRET) {
+  const handleLogin = (inputCode: string) => {
+    const code = inputCode.trim();
+    
+    // الأولوية لرمز الأدمن الرئيسي "ADMIN123" أو الرمز المخزن
+    const isMasterAdmin = code === ADMIN_SECRET;
+    const isStoredAdmin = config.adminSecret && code === config.adminSecret.trim();
+
+    if (isMasterAdmin || isStoredAdmin) {
       const adminUser: UserState = { role: 'admin' };
       setUser(adminUser);
       storage.setUser(adminUser);
@@ -44,6 +51,7 @@ const App: React.FC = () => {
       return true;
     }
 
+    // التحقق من رموز الطلاب
     const tokenIndex = tokens.findIndex(t => 
       t.code === code && 
       t.expiryDate > Date.now() && 
@@ -92,22 +100,57 @@ const App: React.FC = () => {
     storage.saveConfig(newConfig);
   };
 
+  // حساب وقت انتهاء الصلاحية للطلاب
+  const isExpiringSoon = user?.role === 'student' && user.expiry 
+    ? (user.expiry - Date.now()) < (3 * 24 * 60 * 60 * 1000) && (user.expiry - Date.now()) > 0
+    : false;
+
+  const daysLeft = user?.expiry ? Math.ceil((user.expiry - Date.now()) / (24 * 60 * 60 * 1000)) : 0;
+
   return (
     <Layout config={config} user={user} onLogout={handleLogout} theme={theme} onToggleTheme={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}>
       {!user ? (
         <Login onLogin={handleLogin} />
       ) : (
         <>
+          {/* بنر تنبيه انتهاء الاشتراك للطلاب */}
+          {isExpiringSoon && !isAdminMode && (
+            <div className="mb-6 animate-in slide-in-from-top duration-500">
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 glass">
+                <div className="flex items-center gap-3">
+                  <div className="bg-amber-500/20 p-2 rounded-xl">
+                    <AlertTriangle className="w-6 h-6 text-amber-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-amber-500 text-sm sm:text-base">تنبيه انتهاء الاشتراك</h4>
+                    <p className="text-xs dark:text-amber-200/60 text-amber-800/60">ينتهي اشتراكك خلال {daysLeft} {daysLeft === 1 ? 'يوم' : 'أيام'}. يرجى تجديد الرمز لضمان استمرار الوصول.</p>
+                  </div>
+                </div>
+                {config.socialLinks?.whatsapp && (
+                  <a 
+                    href={config.socialLinks.whatsapp}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-amber-500/20 active:scale-95 whitespace-nowrap"
+                  >
+                    <Clock className="w-4 h-4" />
+                    تجديد الاشتراك الآن
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
           {user.role === 'admin' && (
-            <div className="fixed top-24 left-6 z-[100] flex flex-col gap-2">
+            <div className="fixed top-24 left-4 md:left-6 z-[100] flex flex-col gap-2">
               <button 
                 onClick={() => setIsAdminMode(!isAdminMode)}
-                className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold shadow-2xl transition-all border-2 ${isAdminMode ? 'bg-white text-emerald-600 border-white' : 'bg-emerald-500 text-white border-emerald-400 hover:bg-emerald-600'}`}
+                className={`flex items-center gap-2 px-4 py-3 md:px-5 md:py-3 rounded-2xl font-bold shadow-2xl transition-all border-2 ${isAdminMode ? 'bg-white text-emerald-600 border-white' : 'bg-emerald-500 text-white border-emerald-400 hover:bg-emerald-600'} text-xs md:text-sm`}
               >
                 {isAdminMode ? (
-                  <><Eye className="w-5 h-5" /> عرض الواجهة الرسمية</>
+                  <><Eye className="w-4 h-4 md:w-5 md:h-5" /> عرض الواجهة</>
                 ) : (
-                  <><Settings className="w-5 h-5" /> دخول لوحة التحكم</>
+                  <><Settings className="w-4 h-4 md:w-5 md:h-5" /> لوحة التحكم</>
                 )}
               </button>
             </div>

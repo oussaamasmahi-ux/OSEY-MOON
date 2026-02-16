@@ -1,5 +1,5 @@
 
-import { AppConfig, ContentItem, AccessToken } from './types';
+import { AppConfig, ContentItem } from './types';
 
 export const ADMIN_SECRET = "ADMIN123";
 
@@ -13,6 +13,7 @@ export const VET_AI_INSTRUCTION = `أنت "Osey AI"، مساعد ذكي متخص
 export const INITIAL_CONFIG: AppConfig = {
   logo: "https://cdn-icons-png.flaticon.com/512/2809/2809831.png",
   platformName: "osey vet",
+  adminSecret: "ADMIN123",
   socialLinks: {
     facebook: "https://facebook.com",
     telegram: "https://t.me",

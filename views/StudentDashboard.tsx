@@ -1,10 +1,10 @@
 
+// Fix: Use default import for React to resolve JSX intrinsic element type errors
 import React, { useState } from 'react';
 import { ContentItem, UserState, Attachment } from '../types';
 import { GlassCard } from '../components/GlassCard';
 import { Search, Image as ImageIcon, FileText, ExternalLink, X, Clock, Eye, Download, ChevronLeft, BookOpen } from 'lucide-react';
 
-// Changed to default import to ensure JSX intrinsic elements (div, h2, p, input, button, h3, span, img, a, etc.) are correctly recognized in this environment
 interface StudentDashboardProps {
   content: ContentItem[];
   user: UserState;

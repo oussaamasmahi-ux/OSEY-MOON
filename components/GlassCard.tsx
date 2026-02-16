@@ -1,7 +1,7 @@
 
+// Fix: Use default import for React to ensure JSX intrinsic elements (div, etc.) are correctly recognized in this environment
 import React from 'react';
 
-// Changed to default import to ensure JSX intrinsic elements (div, etc.) are correctly recognized in this environment
 interface GlassCardProps {
   children: React.ReactNode;
   className?: string;

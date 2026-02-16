@@ -37,6 +37,7 @@ export interface SocialLinks {
 export interface AppConfig {
   logo: string;
   platformName: string;
+  adminSecret?: string;
   socialLinks?: SocialLinks;
 }
 
