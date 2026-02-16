@@ -4,7 +4,7 @@ import React, { useState, useRef, ChangeEvent } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { ContentItem, AccessToken, AppConfig, ContentType, TokenDuration, Attachment } from '../types';
 import { GlassCard } from '../components/GlassCard';
-import { Plus, Trash2, Key, BookOpen, Settings, Facebook, Youtube, MessageCircle, Send as TelegramIcon, Upload, Loader2, X, Files, ChevronDown, Save, Globe, Shield, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Key, BookOpen, Settings, Facebook, Youtube, MessageCircle, Send as TelegramIcon, Upload, Loader2, X, Files, ChevronDown, Save, Globe, Shield, Sparkles, AlertCircle } from 'lucide-react';
 import { DURATION_LABELS, DURATION_MS } from '../constants';
 
 interface AdminDashboardProps {
@@ -31,18 +31,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     title: '', description: '', category: 'lesson', attachments: []
   });
 
+  const handleOpenAiKeySelector = async () => {
+    try {
+      if (window.aistudio && window.aistudio.openSelectKey) {
+        await window.aistudio.openSelectKey();
+      } else {
+        alert("وظيفة اختيار المفتاح غير متوفرة في هذا المتصفح.");
+      }
+    } catch (err) {
+      console.error("Error opening key selector:", err);
+    }
+  };
+
   const generateAiDescription = async () => {
-    if (!newContent.title) return;
+    if (!newContent.title?.trim()) return;
     setIsAiGenerating(true);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: `اكتب وصفاً علمياً جذاباً ومختصراً (بحد أقصى 100 كلمة) لدرس بعنوان: "${newContent.title}" لمنصة تعليمية بيطرية.`,
+        contents: `قم بكتابة وصف علمي جذاب ومختصر باللغة العربية لدرس بيطري بعنوان: "${newContent.title}". اجعل الوصف بحدود 20-30 كلمة فقط لطلاب المنصة.`,
       });
       setNewContent(prev => ({ ...prev, description: response.text || '' }));
     } catch (error) {
-      console.error("AI Generation failed:", error);
+      console.error("AI Description Generation failed:", error);
+      alert("تعذر استخدام الذكاء الاصطناعي. تأكد من تفعيل مفتاح الـ API من الإعدادات.");
     } finally {
       setIsAiGenerating(false);
     }
@@ -79,9 +92,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      // الحماية من الملفات الضخمة التي قد تعطل LocalStorage
-      if (file.size > 2 * 1024 * 1024) {
-        alert(`الملف "${file.name}" كبير جداً. يرجى رفع ملفات أقل من 2 ميجابايت.`);
+      const maxSize = uploadType === 'image' ? 1 * 1024 * 1024 : 3 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert(`الملف "${file.name}" كبير جداً. يرجى رفع ملفات أصغر.`);
         continue;
       }
 
@@ -302,6 +315,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {activeTab === 'settings' && (
         <div className="max-w-4xl mx-auto space-y-6">
+          {/* AI Configuration Section */}
+          <GlassCard className="border-t-4 border-t-blue-500 bg-blue-500/5">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="bg-blue-500/20 p-4 rounded-3xl">
+                <Sparkles className="w-10 h-10 text-blue-400" />
+              </div>
+              <div className="flex-1 text-center md:text-right">
+                <h3 className="text-lg font-black text-white mb-1 uppercase tracking-widest">تنشيط الذكاء الاصطناعي</h3>
+                <p className="text-xs text-blue-200/60 leading-relaxed">لتفعيل ميزات وصف الدروس التلقائي ومساعد Osey AI، يرجى ربط مفتاح API الخاص بك من Google.</p>
+              </div>
+              <button 
+                onClick={handleOpenAiKeySelector}
+                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl shadow-xl transition-all flex items-center gap-2 active:scale-95 whitespace-nowrap"
+              >
+                <Key className="w-5 h-5" />
+                تنشيط المفتاح الآن
+              </button>
+            </div>
+          </GlassCard>
+
           <GlassCard className="border-t-4 border-t-emerald-500">
             <h3 className="text-xl font-black mb-8 flex items-center gap-2 text-white">
               <Globe className="w-6 h-6 text-emerald-400" />

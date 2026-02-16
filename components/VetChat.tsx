@@ -2,12 +2,12 @@
 // Fix: Use default import for React to resolve JSX intrinsic element type errors
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
-import { MessageCircle, Send, X, Bot, User, Loader2, Sparkles } from 'lucide-react';
+import { MessageCircle, Send, X, Bot, User, Loader2, Sparkles, AlertCircle, Key } from 'lucide-react';
 import { VET_AI_INSTRUCTION } from '../constants';
 
 export const VetChat: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string }[]>([]);
+  const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string, isError?: boolean }[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -18,51 +18,55 @@ export const VetChat: React.FC = () => {
     }
   }, [messages, isLoading]);
 
+  const handleOpenAiKeySelector = async () => {
+    try {
+      if (window.aistudio && window.aistudio.openSelectKey) {
+        await window.aistudio.openSelectKey();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
     const userMsg = input.trim();
-    const currentHistory = [...messages];
+    const currentHistory = [...messages.filter(m => !m.isError)];
     
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setIsLoading(true);
 
     try {
-      // إنشاء مثيل جديد لضمان استخدام أحدث مفتاح API
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      
-      // تشكيل مصفوفة المحتوى مع الحفاظ على الأدوار (user/model)
-      const contents = [
-        ...currentHistory.map(m => ({
-          role: m.role === 'user' ? 'user' : 'model',
-          parts: [{ text: m.text }]
-        })),
-        { role: 'user', parts: [{ text: userMsg }] }
-      ];
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
-        contents: contents, // استخدام المصفوفة مباشرة للحفاظ على سياق الحوار
+      const chat = ai.chats.create({
+        model: 'gemini-3-flash-preview', 
         config: {
           systemInstruction: VET_AI_INSTRUCTION,
-          temperature: 0.8,
-          // إضافة ميزانية تفكير للموديل Pro لضمان دقة الإجابات البيطرية العلمية
-          thinkingConfig: { thinkingBudget: 4000 }
+          temperature: 0.7,
         },
+        history: currentHistory.map(m => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.text }]
+        }))
       });
 
-      const aiText = response.text || "عذراً، واجهت مشكلة في صياغة الإجابة.";
-      setMessages(prev => [...prev, { role: 'ai', text: aiText }]);
-    } catch (error) {
-      console.error("AI Assistant Error:", error);
-      let errorMsg = "فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت أو صلاحية مفتاح API.";
+      const result = await chat.sendMessage({ message: userMsg });
+      const aiText = result.text || "عذراً، لم أستطع صياغة رد مناسب حالياً.";
       
-      if (error instanceof Error && error.message.includes("403")) {
-        errorMsg = "عذراً، انتهت حصة الاستخدام المجانية أو المفتاح غير صالح.";
+      setMessages(prev => [...prev, { role: 'ai', text: aiText }]);
+    } catch (error: any) {
+      console.error("AI Interaction Failed:", error);
+      const isKeyError = error.message?.includes("entity was not found") || error.message?.includes("403") || error.message?.includes("API_KEY");
+      
+      let errorMsg = "حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.";
+      if (isKeyError) {
+        errorMsg = "يبدو أن مفتاح الذكاء الاصطناعي غير مفعل أو غير صالح. يرجى إعداده للمتابعة.";
       }
       
-      setMessages(prev => [...prev, { role: 'ai', text: errorMsg }]);
+      setMessages(prev => [...prev, { role: 'ai', text: errorMsg, isError: isKeyError }]);
     } finally {
       setIsLoading(false);
     }
@@ -98,11 +102,22 @@ export const VetChat: React.FC = () => {
             )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-start' : 'justify-end'}`}>
-                <div className={`max-w-[85%] p-3 rounded-2xl flex gap-3 ${msg.role === 'user' ? 'bg-white/10 text-white rounded-br-none' : 'bg-emerald-500 text-white rounded-bl-none shadow-md shadow-emerald-900/20'}`}>
-                  <div className="shrink-0 pt-1">
-                    {msg.role === 'user' ? <User className="w-4 h-4 opacity-50" /> : <Bot className="w-4 h-4" />}
+                <div className={`max-w-[85%] p-3 rounded-2xl flex flex-col gap-2 ${msg.role === 'user' ? 'bg-white/10 text-white rounded-br-none' : (msg.isError ? 'bg-red-500/20 border border-red-500/30 text-red-200' : 'bg-emerald-500 text-white rounded-bl-none shadow-md shadow-emerald-900/20')}`}>
+                  <div className="flex gap-3">
+                    <div className="shrink-0 pt-1">
+                      {msg.role === 'user' ? <User className="w-4 h-4 opacity-50" /> : (msg.isError ? <AlertCircle className="w-4 h-4 text-red-400" /> : <Bot className="w-4 h-4" />)}
+                    </div>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                   </div>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                  {msg.isError && (
+                    <button 
+                      onClick={handleOpenAiKeySelector}
+                      className="mt-2 w-full py-2 bg-red-500 hover:bg-red-400 text-white text-[10px] font-black rounded-lg transition-all flex items-center justify-center gap-2"
+                    >
+                      <Key className="w-3 h-3" />
+                      إعداد مفتاح الـ API الآن
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
