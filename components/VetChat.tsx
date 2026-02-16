@@ -1,5 +1,4 @@
 
-// Fix: Use default import for React to resolve JSX intrinsic element type errors
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { MessageCircle, Send, X, Bot, User, Loader2, Sparkles, AlertCircle, Key } from 'lucide-react';
@@ -16,15 +15,17 @@ export const VetChat: React.FC = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isLoading]);
+  }, [messages, isLoading, isOpen]);
 
   const handleOpenAiKeySelector = async () => {
     try {
       if (window.aistudio && window.aistudio.openSelectKey) {
         await window.aistudio.openSelectKey();
+        // نفترض النجاح بعد النقر لبدء المحادثة
+        setMessages([]); 
       }
     } catch (err) {
-      console.error(err);
+      console.error("Key selection failed:", err);
     }
   };
 
@@ -39,10 +40,16 @@ export const VetChat: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // التحقق من وجود مفتاح API قبل الطلب
+      if (!process.env.API_KEY) {
+        throw new Error("MISSING_API_KEY");
+      }
 
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      
+      // استخدام موديل فلاش لايت لسرعة الاستجابة القصوى
       const chat = ai.chats.create({
-        model: 'gemini-3-flash-preview', 
+        model: 'gemini-2.5-flash-lite-latest', 
         config: {
           systemInstruction: VET_AI_INSTRUCTION,
           temperature: 0.7,
@@ -54,16 +61,17 @@ export const VetChat: React.FC = () => {
       });
 
       const result = await chat.sendMessage({ message: userMsg });
-      const aiText = result.text || "عذراً، لم أستطع صياغة رد مناسب حالياً.";
+      const aiText = result.text || "عذراً، لم أتمكن من الحصول على إجابة.";
       
       setMessages(prev => [...prev, { role: 'ai', text: aiText }]);
     } catch (error: any) {
-      console.error("AI Interaction Failed:", error);
-      const isKeyError = error.message?.includes("entity was not found") || error.message?.includes("403") || error.message?.includes("API_KEY");
-      
-      let errorMsg = "حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.";
-      if (isKeyError) {
-        errorMsg = "يبدو أن مفتاح الذكاء الاصطناعي غير مفعل أو غير صالح. يرجى إعداده للمتابعة.";
+      console.error("AI Error:", error);
+      let errorMsg = "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.";
+      let isKeyError = false;
+
+      if (error.message === "MISSING_API_KEY" || error.message?.includes("403") || error.message?.includes("API_KEY") || error.message?.includes("not found")) {
+        errorMsg = "محرك الذكاء الاصطناعي غير نشط. يرجى الضغط على الزر أدناه لتنشيط الخدمة.";
+        isKeyError = true;
       }
       
       setMessages(prev => [...prev, { role: 'ai', text: errorMsg, isError: isKeyError }]);
@@ -98,21 +106,31 @@ export const VetChat: React.FC = () => {
                   <Sparkles className="w-8 h-8 text-emerald-400" />
                 </div>
                 <p className="text-emerald-200/60 text-sm px-6 font-bold">مرحباً بك! أنا مساعدك الذكي المتخصص في الطب البيطري. كيف يمكنني مساعدتك اليوم؟</p>
+                {!process.env.API_KEY && (
+                  <button 
+                    onClick={handleOpenAiKeySelector}
+                    className="mt-6 px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-black rounded-xl transition-all flex items-center justify-center gap-2 mx-auto shadow-lg"
+                  >
+                    <Key className="w-4 h-4" />
+                    تفعيل محرك osey AI
+                  </button>
+                )}
               </div>
             )}
+            
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-start' : 'justify-end'}`}>
-                <div className={`max-w-[85%] p-3 rounded-2xl flex flex-col gap-2 ${msg.role === 'user' ? 'bg-white/10 text-white rounded-br-none' : (msg.isError ? 'bg-red-500/20 border border-red-500/30 text-red-200' : 'bg-emerald-500 text-white rounded-bl-none shadow-md shadow-emerald-900/20')}`}>
+                <div className={`max-w-[85%] p-3 rounded-2xl flex flex-col gap-2 ${msg.role === 'user' ? 'bg-white/10 text-white rounded-br-none' : (msg.isError ? 'bg-amber-500/20 border border-amber-500/30 text-amber-200' : 'bg-emerald-500 text-white rounded-bl-none shadow-md shadow-emerald-900/20')}`}>
                   <div className="flex gap-3">
                     <div className="shrink-0 pt-1">
-                      {msg.role === 'user' ? <User className="w-4 h-4 opacity-50" /> : (msg.isError ? <AlertCircle className="w-4 h-4 text-red-400" /> : <Bot className="w-4 h-4" />)}
+                      {msg.role === 'user' ? <User className="w-4 h-4 opacity-50" /> : (msg.isError ? <AlertCircle className="w-4 h-4 text-amber-400" /> : <Bot className="w-4 h-4" />)}
                     </div>
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                   </div>
                   {msg.isError && (
                     <button 
                       onClick={handleOpenAiKeySelector}
-                      className="mt-2 w-full py-2 bg-red-500 hover:bg-red-400 text-white text-[10px] font-black rounded-lg transition-all flex items-center justify-center gap-2"
+                      className="mt-2 w-full py-2 bg-amber-500 hover:bg-amber-400 text-white text-[10px] font-black rounded-lg transition-all flex items-center justify-center gap-2"
                     >
                       <Key className="w-3 h-3" />
                       إعداد مفتاح الـ API الآن
@@ -121,6 +139,7 @@ export const VetChat: React.FC = () => {
                 </div>
               </div>
             ))}
+            
             {isLoading && (
               <div className="flex justify-end">
                 <div className="bg-emerald-500/20 p-3 rounded-2xl rounded-bl-none border border-emerald-500/20">
